@@ -81,6 +81,12 @@ namespace Dynamo
             context.Save(myBook);
             // Retrieve the book. 
             Book bookRetrieved = context.Load<Book>(bookID);
+            Console.WriteLine(string.Concat("Title: ", bookRetrieved.Title));
+            Console.WriteLine(string.Concat("ISBN: ", bookRetrieved.ISBN));
+            foreach (string author in bookRetrieved.BookAuthors) {
+                Console.WriteLine(string.Concat("BookAuthor: ", author));
+            }
+            Console.WriteLine();
 
             // Update few properties.
             bookRetrieved.ISBN = "222-2222221001";
@@ -89,6 +95,13 @@ namespace Dynamo
 
             // Retrieve the updated book. This time add the optional ConsistentRead parameter using DynamoDBContextConfig object.
             Book updatedBook = context.Load<Book>(bookID, new DynamoDBContextConfig { ConsistentRead = true });
+            Console.WriteLine(string.Concat("Updated Title: ", updatedBook.Title));
+            Console.WriteLine(string.Concat("Updated ISBN: ", updatedBook.ISBN));
+            foreach (string author in updatedBook.BookAuthors)
+            {
+                Console.WriteLine(string.Concat("BookAuthor: ", author));
+            }
+            Console.WriteLine();
 
             // Delete the book.
             context.Delete<Book>(bookID);

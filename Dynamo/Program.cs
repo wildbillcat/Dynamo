@@ -17,47 +17,79 @@ namespace Dynamo
             var config = new AmazonDynamoDBConfig();
             config.ServiceURL = "http://localhost:8000";
             AmazonDynamoDBClient client = new AmazonDynamoDBClient(config);
-            //string tableName = "ProductCatalog";
+            string tableName = "SKUs";
+            bool tableExists = false;
+            string lastEvaluatedTableName = null;
+            do
+            {
+                // Create a request object to specify optional parameters.
+                var req = new ListTablesRequest
+                {
+                    Limit = 10, // Page size.
+                    ExclusiveStartTableName = lastEvaluatedTableName
+                };
 
-            //var request = new CreateTableRequest
-            //{
-            //    TableName = tableName,
-            //    AttributeDefinitions = new List<AttributeDefinition>()
-            //    {
-            //        new AttributeDefinition
-            //        {
-            //            AttributeName = "Id",
-            //            AttributeType = "N"
-            //        }
-            //    },
-            //            KeySchema = new List<KeySchemaElement>()
-            //    {
-            //        new KeySchemaElement
-            //        {
-            //            AttributeName = "Id",
-            //            KeyType = "HASH"  //Partition key
-            //        }
-            //        },
-            //    ProvisionedThroughput = new ProvisionedThroughput
-            //    {
-            //        ReadCapacityUnits = 10,
-            //        WriteCapacityUnits = 5
-            //    }
-            //};
+                var tblres = client.ListTables(req);
+                foreach (string name in tblres.TableNames) {
+                    if (name.Equals(tableName))
+                    {
+                        tableExists = true;
+                        break;
+                    }
+                }
+                if (tableExists)
+                {
+                    break;
+                }
+                lastEvaluatedTableName = tblres.LastEvaluatedTableName;
 
-            //CreateTableResponse response = client.CreateTable(request);
+            } while (lastEvaluatedTableName != null);
 
-            //var tableDescription = response.TableDescription;
-            //Console.WriteLine("{1}: {0} \t ReadCapacityUnits: {2} \t WriteCapacityUnits: {3}",
-            //                tableDescription.TableStatus,
-            //                tableDescription.TableName,
-            //                tableDescription.ProvisionedThroughput.ReadCapacityUnits,
-            //                tableDescription.ProvisionedThroughput.WriteCapacityUnits);
+            if (!tableExists)
+            {
+                //Table doesnt exist, lets create it
+                var request = new CreateTableRequest
+                {
+                    TableName = tableName,
+                    AttributeDefinitions = new List<AttributeDefinition>()
+                {
+                    new AttributeDefinition
+                    {
+                        AttributeName = "Id",
+                        AttributeType = "N"
+                    }
+                },
+                    KeySchema = new List<KeySchemaElement>()
+                {
+                    new KeySchemaElement
+                    {
+                        AttributeName = "Id",
+                        KeyType = "HASH"  //Partition key
+                    }
+                    },
+                    ProvisionedThroughput = new ProvisionedThroughput
+                    {
+                        ReadCapacityUnits = 10,
+                        WriteCapacityUnits = 5
+                    }
+                };
 
-            //string status = tableDescription.TableStatus;
-            //Console.WriteLine(tableName + " - " + status);
+                CreateTableResponse response = client.CreateTable(request);
 
-            //var res = client.DescribeTable(new DescribeTableRequest { TableName = "ProductCatalog" });
+                var tableDescription = response.TableDescription;
+                Console.WriteLine("{1}: {0} \t ReadCapacityUnits: {2} \t WriteCapacityUnits: {3}",
+                                tableDescription.TableStatus,
+                                tableDescription.TableName,
+                                tableDescription.ProvisionedThroughput.ReadCapacityUnits,
+                                tableDescription.ProvisionedThroughput.WriteCapacityUnits);
+
+                string status = tableDescription.TableStatus;
+                Console.WriteLine(tableName + " - " + status);
+
+                var res = client.DescribeTable(new DescribeTableRequest { TableName = tableName });
+            }
+
+            
             Console.WriteLine("Test Crud?");
             Console.ReadLine();
 

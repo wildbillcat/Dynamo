@@ -7,14 +7,16 @@ using Amazon.DynamoDBv2.DataModel;
 
 namespace Dynamo
 {
-    [DynamoDBTable("SKUs")]
-    class SKU
+    [DynamoDBTable("MonthlyTotals")]
+    class MonthlyTotal
     {
         [DynamoDBHashKey]
-        public int Id { get; set; }
+        public int SKUId { get; set; }
 
-        public string Name { get; set; }
+        [DynamoDBRangeKey]
+        public DateTime Month { get; set; }
+
+        public double Total { get; set; }
         
-        public Dictionary<DateTime, int> MonthlyTotals { get; set; }        
     }
 }
